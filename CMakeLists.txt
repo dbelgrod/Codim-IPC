@@ -1,10 +1,12 @@
-cmake_minimum_required(VERSION 3.2 FATAL_ERROR)
+cmake_minimum_required(VERSION 3.8)
 
 if (NOT APPLE)
 set(CMAKE_C_COMPILER /usr/bin/gcc)
 set(CMAKE_CXX_COMPILER /usr/bin/g++)
 endif()
 project(JGSL CXX)
+
+option(PYBIND "Add Python binding module" OFF)
 
 set(LINEAR_SOLVER "CHOLMOD" CACHE STRING "Direct linear system solver to use (options: EIGEN, CHOLMOD)")
 set_property(CACHE LINEAR_SOLVER PROPERTY STRINGS "EIGEN" "CHOLMOD")
@@ -31,24 +33,24 @@ add_subdirectory(Externals/pybind11-master)
 include_directories(Externals/flat_hash_map)
 include_directories(Externals/meta/include)
 
-pybind11_add_module(JGSL Library/EXPORTER.cpp
-  Library/Math/Distance/EVCTCD/CTCD.cpp)
+if (PYBIND)
+  pybind11_add_module(JGSL Library/EXPORTER.cpp
+    Library/Math/Distance/EVCTCD/CTCD.cpp)
+endif()
 
 add_library(CodimIPC Library/Math/Distance/EVCTCD/CTCD.cpp)
 
 include(eigen)
-# find_package(Eigen3 REQUIRED)
-# include(eigen)
-# add_library(eigen INTERFACE IMPORTED)
-# add_library(eigen ALIAS Eigen3_Eigen)
-
 find_package(Boost REQUIRED)
 
 if(LINEAR_SOLVER STREQUAL "CHOLMOD")
   message("Linear solver: use CHOLMOD")
   include(onetbb)
   include(suitesparse)
-  target_compile_definitions(JGSL PUBLIC CHOLMOD_DIRECT_SOLVER)
+  if (PYBIND)
+    target_compile_definitions(JGSL PUBLIC CHOLMOD_DIRECT_SOLVER)
+  endif()
+  target_compile_definitions(CodimIPC PUBLIC CHOLMOD_DIRECT_SOLVER)
 else()
   message("Linear solver: use Eigen (default)")
 endif()
@@ -59,8 +61,10 @@ else()
   set(JGSL_DEPS partio Kokkos::kokkos cabanacore Eigen3::Eigen amgcl)
 endif()
 
-target_include_directories(JGSL SYSTEM PUBLIC ${EIGEN3_INCLUDE_DIR} ${Boost_INCLUDE_DIRS})
-target_link_libraries(JGSL PUBLIC ${JGSL_DEPS})
+if (PYBIND)
+  target_include_directories(JGSL SYSTEM PUBLIC ${EIGEN3_INCLUDE_DIR} ${Boost_INCLUDE_DIRS})
+  target_link_libraries(JGSL PUBLIC ${JGSL_DEPS})
+endif()
 
 target_include_directories(CodimIPC SYSTEM PUBLIC ${EIGEN3_INCLUDE_DIR} ${Boost_INCLUDE_DIRS})
 target_link_libraries(CodimIPC PUBLIC ${JGSL_DEPS})
