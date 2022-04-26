@@ -1,9 +1,10 @@
 cmake_minimum_required(VERSION 3.8)
 
-if (NOT APPLE)
-set(CMAKE_C_COMPILER /usr/bin/gcc)
-set(CMAKE_CXX_COMPILER /usr/bin/g++)
-endif()
+# Having below is very bad since it causes infinite compilation
+# if (NOT APPLE)
+# set(CMAKE_C_COMPILER /usr/bin/gcc)
+# set(CMAKE_CXX_COMPILER /usr/bin/g++)
+# endif()
 project(JGSL CXX)
 
 set(LINEAR_SOLVER "CHOLMOD" CACHE STRING "Direct linear system solver to use (options: EIGEN, CHOLMOD)")
@@ -45,7 +46,7 @@ add_library(CodimIPC Library/Math/Distance/EVCTCD/CTCD.cpp)
 target_compile_options(JGSL PRIVATE -mfma -mbmi2 -mavx2 -fPIC -Wno-unused-variable -Wno-sign-compare -Wno-reorder )
 target_compile_options(CodimIPC PRIVATE -mfma -mbmi2 -mavx2 -fPIC -Wno-unused-variable -Wno-sign-compare -Wno-reorder )
 
-set_target_properties( JGSL CodimIPC
+set_target_properties(  CodimIPC
     PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY  "${CMAKE_CURRENT_SOURCE_DIR}/build"
     LIBRARY_OUTPUT_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/build"
