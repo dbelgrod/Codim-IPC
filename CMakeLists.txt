@@ -38,7 +38,7 @@ include(eigen)
 # find_package(Eigen3 REQUIRED)
 # include(eigen)
 # add_library(eigen INTERFACE IMPORTED)
-add_library(eigen ALIAS Eigen3_Eigen)
+# add_library(eigen ALIAS Eigen3_Eigen)
 
 find_package(Boost REQUIRED)
 
@@ -52,9 +52,9 @@ else()
 endif()
 
 if(LINEAR_SOLVER STREQUAL "CHOLMOD")
-  set(JGSL_DEPS partio Kokkos::kokkos cabanacore eigen amgcl TBB::tbb SuiteSparse::SuiteSparse)
+  set(JGSL_DEPS partio Kokkos::kokkos cabanacore Eigen3::Eigen amgcl TBB::tbb SuiteSparse::SuiteSparse)
 else()
-  set(JGSL_DEPS partio Kokkos::kokkos cabanacore eigen amgcl)
+  set(JGSL_DEPS partio Kokkos::kokkos cabanacore Eigen3::Eigen amgcl)
 endif()
 
 target_include_directories(JGSL SYSTEM PUBLIC ${EIGEN3_INCLUDE_DIR} ${Boost_INCLUDE_DIRS})
