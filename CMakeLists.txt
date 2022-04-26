@@ -6,22 +6,27 @@ set(CMAKE_CXX_COMPILER /usr/bin/g++)
 endif()
 project(JGSL CXX)
 
-option(PYBIND "Add Python binding module" OFF)
-
 set(LINEAR_SOLVER "CHOLMOD" CACHE STRING "Direct linear system solver to use (options: EIGEN, CHOLMOD)")
 set_property(CACHE LINEAR_SOLVER PROPERTY STRINGS "EIGEN" "CHOLMOD")
 
 set(ENABLE_FEM_SHELL ON)
+
+if(CMAKE_SOURCE_DIR STREQUAL CMAKE_CURRENT_SOURCE_DIR)
+  set(CODIM_IPC_TOPLEVEL_PROJECT ON)
+else()
+  set(CODIM_IPC_TOPLEVEL_PROJECT OFF)
+endif()
 
 add_definitions(-DSTORAGE_ENABLED_OPENMP )
 if (ENABLE_FEM_SHELL)
   add_definitions(-DENABLE_FEM_SHELL)
 endif()
 
-set(CMAKE_CXX_STANDARD 17)
-set(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} -mfma -mbmi2 -mavx2 -fPIC -Wno-unused-variable -Wno-sign-compare -Wno-reorder")
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/build")
-set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/build")
+
+
+# set(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} -mfma -mbmi2 -mavx2 -fPIC -Wno-unused-variable -Wno-sign-compare -Wno-reorder")
+# set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/build")
+# set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/build")
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/CMake)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/Library)
 
@@ -33,12 +38,18 @@ add_subdirectory(Externals/pybind11-master)
 include_directories(Externals/flat_hash_map)
 include_directories(Externals/meta/include)
 
-if (PYBIND)
-  pybind11_add_module(JGSL Library/EXPORTER.cpp
+pybind11_add_module(JGSL Library/EXPORTER.cpp
     Library/Math/Distance/EVCTCD/CTCD.cpp)
-endif()
-
 add_library(CodimIPC Library/Math/Distance/EVCTCD/CTCD.cpp)
+
+target_compile_options(JGSL PRIVATE -mfma -mbmi2 -mavx2 -fPIC -Wno-unused-variable -Wno-sign-compare -Wno-reorder )
+target_compile_options(CodimIPC PRIVATE -mfma -mbmi2 -mavx2 -fPIC -Wno-unused-variable -Wno-sign-compare -Wno-reorder )
+
+set_target_properties( JGSL CodimIPC
+    PROPERTIES
+    RUNTIME_OUTPUT_DIRECTORY  "${CMAKE_CURRENT_SOURCE_DIR}/build"
+    LIBRARY_OUTPUT_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/build"
+)
 
 include(eigen)
 find_package(Boost REQUIRED)
@@ -47,9 +58,7 @@ if(LINEAR_SOLVER STREQUAL "CHOLMOD")
   message("Linear solver: use CHOLMOD")
   include(onetbb)
   include(suitesparse)
-  if (PYBIND)
-    target_compile_definitions(JGSL PUBLIC CHOLMOD_DIRECT_SOLVER)
-  endif()
+  target_compile_definitions(JGSL PUBLIC CHOLMOD_DIRECT_SOLVER)
   target_compile_definitions(CodimIPC PUBLIC CHOLMOD_DIRECT_SOLVER)
 else()
   message("Linear solver: use Eigen (default)")
@@ -61,10 +70,8 @@ else()
   set(JGSL_DEPS partio Kokkos::kokkos cabanacore Eigen3::Eigen amgcl)
 endif()
 
-if (PYBIND)
-  target_include_directories(JGSL SYSTEM PUBLIC ${EIGEN3_INCLUDE_DIR} ${Boost_INCLUDE_DIRS})
-  target_link_libraries(JGSL PUBLIC ${JGSL_DEPS})
-endif()
+target_include_directories(JGSL SYSTEM PUBLIC ${EIGEN3_INCLUDE_DIR} ${Boost_INCLUDE_DIRS})
+target_link_libraries(JGSL PUBLIC ${JGSL_DEPS})
 
 target_include_directories(CodimIPC SYSTEM PUBLIC ${EIGEN3_INCLUDE_DIR} ${Boost_INCLUDE_DIRS})
 target_link_libraries(CodimIPC PUBLIC ${JGSL_DEPS})
