@@ -34,8 +34,11 @@ include_directories(Externals/meta/include)
 pybind11_add_module(JGSL Library/EXPORTER.cpp
   Library/Math/Distance/EVCTCD/CTCD.cpp)
 
-find_package(Eigen3 REQUIRED)
-add_library(eigen INTERFACE IMPORTED)
+include(eigen)
+# find_package(Eigen3 REQUIRED)
+# include(eigen)
+# add_library(eigen INTERFACE IMPORTED)
+add_library(eigen ALIAS Eigen3_Eigen)
 
 find_package(Boost REQUIRED)
 
@@ -55,4 +58,5 @@ else()
 endif()
 
 target_include_directories(JGSL SYSTEM PUBLIC ${EIGEN3_INCLUDE_DIR} ${Boost_INCLUDE_DIRS})
+# add_library(JGSL STATIC ${JGSL_DEPS})
 target_link_libraries(JGSL PUBLIC ${JGSL_DEPS})
