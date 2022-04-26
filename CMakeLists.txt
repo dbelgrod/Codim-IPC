@@ -34,6 +34,8 @@ include_directories(Externals/meta/include)
 pybind11_add_module(JGSL Library/EXPORTER.cpp
   Library/Math/Distance/EVCTCD/CTCD.cpp)
 
+add_library(CodimIPC Library/Math/Distance/EVCTCD/CTCD.cpp)
+
 include(eigen)
 # find_package(Eigen3 REQUIRED)
 # include(eigen)
@@ -58,5 +60,7 @@ else()
 endif()
 
 target_include_directories(JGSL SYSTEM PUBLIC ${EIGEN3_INCLUDE_DIR} ${Boost_INCLUDE_DIRS})
-# add_library(JGSL STATIC ${JGSL_DEPS})
 target_link_libraries(JGSL PUBLIC ${JGSL_DEPS})
+
+target_include_directories(CodimIPC SYSTEM PUBLIC ${EIGEN3_INCLUDE_DIR} ${Boost_INCLUDE_DIRS})
+target_link_libraries(CodimIPC PUBLIC ${JGSL_DEPS})
