@@ -29,7 +29,8 @@ endif()
 # set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/build")
 # set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/build")
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/CMake)
-include_directories(${CMAKE_CURRENT_SOURCE_DIR}/Library)
+# include_directories(${CMAKE_CURRENT_SOURCE_DIR}/Library)
+
 
 find_package(PythonInterp 3 REQUIRED)
 add_subdirectory(Externals)
@@ -42,6 +43,9 @@ include_directories(Externals/meta/include)
 pybind11_add_module(JGSL Library/EXPORTER.cpp
     Library/Math/Distance/EVCTCD/CTCD.cpp)
 add_library(CodimIPC Library/Math/Distance/EVCTCD/CTCD.cpp)
+
+target_include_directories(JGSL PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/Library)
+target_include_directories(CodimIPC PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/Library)
 
 target_compile_options(JGSL PRIVATE -mfma -mbmi2 -mavx2 -fPIC -Wno-unused-variable -Wno-sign-compare -Wno-reorder )
 target_compile_options(CodimIPC PRIVATE -mfma -mbmi2 -mavx2 -fPIC -Wno-unused-variable -Wno-sign-compare -Wno-reorder )
