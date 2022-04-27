@@ -42,7 +42,7 @@ include_directories(Externals/meta/include)
 
 pybind11_add_module(JGSL Library/EXPORTER.cpp
     Library/Math/Distance/EVCTCD/CTCD.cpp)
-add_library(CodimIPC Library/Math/Distance/EVCTCD/CTCD.cpp)
+pybind11_add_module(CodimIPC SHARED Library/Math/Distance/EVCTCD/CTCD.cpp)
 
 target_include_directories(JGSL PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/Library)
 target_include_directories(CodimIPC PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/Library)
